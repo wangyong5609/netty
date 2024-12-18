@@ -109,6 +109,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * {@link Channel} implementation has no no-args constructor.
      */
     public B channel(Class<? extends C> channelClass) {
+        // checkNotNull函数的返回值将作为参数传递给ReflectiveChannelFactory的构造函数
         return channelFactory(new ReflectiveChannelFactory<C>(
                 ObjectUtil.checkNotNull(channelClass, "channelClass")
         ));
@@ -323,6 +324,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
+            // 调用相应 Channel 的无参构造方法创建 Channel 实例
             channel = channelFactory.newChannel();
             init(channel);
         } catch (Throwable t) {

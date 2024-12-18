@@ -46,8 +46,10 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     private static final CauseHolder CANCELLATION_CAUSE_HOLDER = new CauseHolder(
             StacklessCancellationException.newInstance(DefaultPromise.class, "cancel(...)"));
     private static final StackTraceElement[] CANCELLATION_STACK = CANCELLATION_CAUSE_HOLDER.cause.getStackTrace();
-
+    // 保存执行结果
     private volatile Object result;
+    // 执行任务的线程池，promise 持有 executor 的引用，这个其实有点奇怪了
+    // 因为“任务”其实没必要知道自己在哪里被执行的
     private final EventExecutor executor;
     /**
      * One or more listeners. Can be a {@link GenericFutureListener} or a {@link DefaultFutureListeners}.
@@ -56,16 +58,19 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
      * Threading - synchronized(this). We must support adding listeners when there is no EventExecutor.
      */
     private GenericFutureListener<? extends Future<?>> listener;
+    // 监听者，回调函数，任务结束后（正常或异常结束）执行
     private DefaultFutureListeners listeners;
     /**
      * Threading - synchronized(this). We are required to hold the monitor to use Java's underlying wait()/notifyAll().
      */
+    // 等待这个 promise 的线程数(调用sync()/await()进行等待的线程数量)
     private short waiters;
 
     /**
      * Threading - synchronized(this). We must prevent concurrent notification and FIFO listener notification if the
      * executor changes.
      */
+    // 是否正在唤醒等待线程，用于防止重复执行唤醒，不然会重复执行 listeners 的回调方法
     private boolean notifyingListeners;
 
     /**

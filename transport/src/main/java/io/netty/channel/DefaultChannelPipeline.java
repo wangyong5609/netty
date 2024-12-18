@@ -92,10 +92,12 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         this.channel = ObjectUtil.checkNotNull(channel, "channel");
         succeededFuture = new SucceededChannelFuture(channel, null);
         voidPromise = new VoidChannelPromise(channel, true);
-
+        // Handler 是包装在 Context 中的
+        // 实现了 ChannelInboundHandler
         tail = new TailContext(this);
+        // 实现了 ChannelOutboundHandler 和 实现了ChannelInboundHandler
         head = new HeadContext(this);
-
+        // 将 head 和 tail 添加到 pipeline 中
         head.next = tail;
         tail.prev = head;
     }

@@ -131,7 +131,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private final AtomicLong nextWakeupNanos = new AtomicLong(AWAKE);
 
     private final SelectStrategy selectStrategy;
-
+    // 这是 IO 任务的执行时间比例，因为每个线程既有 IO 任务执行，也有非 IO 任务需要执行，所以该参数为了保证有足够时间是给 IO 的
     private volatile int ioRatio = 50;
     private int cancelledKeys;
     private boolean needsToSelectAgain;

@@ -30,12 +30,13 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
     @Override
     public EventExecutorChooser newChooser(EventExecutor[] executors) {
         if (isPowerOfTwo(executors.length)) {
+            // 如果线程池的线程数量是 2^n，采用下面的方式会高效一些：
             return new PowerOfTwoEventExecutorChooser(executors);
         } else {
             return new GenericEventExecutorChooser(executors);
         }
     }
-
+    // 判断是否是 2^n
     private static boolean isPowerOfTwo(int val) {
         return (val & -val) == val;
     }

@@ -69,8 +69,11 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected AbstractChannel(Channel parent) {
         this.parent = parent;
+        // 每个 channel 一个 id
         id = newId();
+        // 每个 channel 内部需要一个 Unsafe 的实例，Unsafe 封装了访问 JDK NIO 的方法
         unsafe = newUnsafe();
+        // 每个 channel 内部都会创建一个 pipeline
         pipeline = newChannelPipeline();
     }
 

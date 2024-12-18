@@ -169,7 +169,7 @@ public interface ChannelFuture extends Future<Void> {
      * future takes place.
      */
     Channel channel();
-
+    // 覆写以下几个方法，使得它们返回值为 ChannelFuture 类型
     @Override
     ChannelFuture addListener(GenericFutureListener<? extends Future<? super Void>> listener);
 

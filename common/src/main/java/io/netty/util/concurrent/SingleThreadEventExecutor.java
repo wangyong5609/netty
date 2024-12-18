@@ -164,11 +164,17 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     protected SingleThreadEventExecutor(EventExecutorGroup parent, Executor executor,
                                         boolean addTaskWakesUp, Queue<Runnable> taskQueue,
                                         RejectedExecutionHandler rejectedHandler) {
+        // 设置了 parent，也就是之前创建的线程池 NioEventLoopGroup 实例
         super(parent);
         this.addTaskWakesUp = addTaskWakesUp;
         this.maxPendingTasks = DEFAULT_MAX_PENDING_EXECUTOR_TASKS;
         this.executor = ThreadExecutorMap.apply(executor, this);
+        // taskQueue，这个东西很重要，提交给 NioEventLoop 的任务都会进入到这个 taskQueue 中等待被执行
+        // NioEventLoop 需要负责 IO 事件和非 IO 事件，
+        // 通常它都在执行 selector 的 select 方法或者正在处理 selectedKeys，如果我们要 submit 一个任务给它，任务就会被放到 taskQueue 中，等它来轮询。
+        // 该队列是线程安全的 LinkedBlockingQueue，默认容量为 16。
         this.taskQueue = ObjectUtil.checkNotNull(taskQueue, "taskQueue");
+        // 任务拒绝策略，默认是 RejectedExecutionHandlers.reject()，也就是直接抛出异常。
         this.rejectedExecutionHandler = ObjectUtil.checkNotNull(rejectedHandler, "rejectedHandler");
     }
 

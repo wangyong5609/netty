@@ -166,8 +166,11 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
 
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
+        // 提供创建用于非阻塞 I/O 的选择器的方法。
         SelectorProvider selectorProvider = (SelectorProvider) args[0];
+        // 用于创建选择哪个通道准备好进行 I/O 操作的策略的工厂。
         SelectStrategyFactory selectStrategyFactory = (SelectStrategyFactory) args[1];
+        // 处理无法执行的任务。
         RejectedExecutionHandler rejectedExecutionHandler = (RejectedExecutionHandler) args[2];
         EventLoopTaskQueueFactory taskQueueFactory = null;
         EventLoopTaskQueueFactory tailTaskQueueFactory = null;
