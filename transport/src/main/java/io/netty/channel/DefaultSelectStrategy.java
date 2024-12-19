@@ -27,6 +27,11 @@ final class DefaultSelectStrategy implements SelectStrategy {
 
     @Override
     public int calculateStrategy(IntSupplier selectSupplier, boolean hasTasks) throws Exception {
+        // 1. 如果 taskQueue 不为空，也就是 hasTasks() 返回 true，
+        // 		那么执行一次 selectNow()，该方法不会阻塞
+        // 2. 如果 hasTasks() 返回 false，那么执行 SelectStrategy.SELECT 分支，
+        //    进行 select(...)，这块是带阻塞的
+        // 这个很好理解，就是按照是否有任务在排队来决定是否可以进行阻塞
         return hasTasks ? selectSupplier.get() : SelectStrategy.SELECT;
     }
 }
