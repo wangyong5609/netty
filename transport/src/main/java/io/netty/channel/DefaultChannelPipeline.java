@@ -763,6 +763,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
     @Override
     public final ChannelPipeline fireChannelRegistered() {
+        // 传参是 head
         AbstractChannelHandlerContext.invokeChannelRegistered(head);
         return this;
     }
@@ -932,6 +933,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     @Override
     public final ChannelFuture connect(
             SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) {
+        // 
         return tail.connect(remoteAddress, localAddress, promise);
     }
 
@@ -1329,6 +1331,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         @Override
         public void channelRegistered(ChannelHandlerContext ctx) {
             invokeHandlerAddedIfNeeded();
+            // 向后传播 inbound 事件
             ctx.fireChannelRegistered();
         }
 

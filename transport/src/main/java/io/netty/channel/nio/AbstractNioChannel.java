@@ -248,6 +248,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                 }
 
                 boolean wasActive = isActive();
+                // 大家自己点进去看 doConnect 方法
+                // 这一步会做 JDK 底层的 SocketChannel connect，然后设置 interestOps 为 SelectionKey.OP_CONNECT
+                // 返回值代表是否已经连接成功
                 if (doConnect(remoteAddress, localAddress)) {
                     fulfillConnectPromise(promise, wasActive);
                 } else {
