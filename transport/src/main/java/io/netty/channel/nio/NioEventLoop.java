@@ -174,15 +174,16 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     private SelectorTuple openSelector() {
         final Selector unwrappedSelector;
         try {
+            // 打开一个新的 Selector
             unwrappedSelector = provider.openSelector();
         } catch (IOException e) {
             throw new ChannelException("failed to open a new selector", e);
         }
-
+        // 如果不需要优化，那么直接返回 SelectorTuple 对象
         if (DISABLE_KEY_SET_OPTIMIZATION) {
             return new SelectorTuple(unwrappedSelector);
         }
-
+        // 安全地获取 sun.nio.ch.SelectorImpl 类的引用，以便后续操作
         Object maybeSelectorImplClass = AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
@@ -196,7 +197,8 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 }
             }
         });
-
+        
+        // 确保当前的 Selector 实现是可以被操作的。如果不是，则记录日志并返回未修改的 Selector。
         if (!(maybeSelectorImplClass instanceof Class) ||
             // ensure the current selector implementation is what we can instrument.
             !((Class<?>) maybeSelectorImplClass).isAssignableFrom(unwrappedSelector.getClass())) {
@@ -214,9 +216,11 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             @Override
             public Object run() {
                 try {
+                    // 通过反射获取 selectedKeys 和 publicSelectedKeys 字段，并尝试将其替换为自定义的 SelectedSelectionKeySet 实例，以优化选择键的管理。
                     Field selectedKeysField = selectorImplClass.getDeclaredField("selectedKeys");
                     Field publicSelectedKeysField = selectorImplClass.getDeclaredField("publicSelectedKeys");
-
+                    
+                    // 如果 Java 版本大于或等于 9，并且支持 Unsafe，则尝试使用 Unsafe 来直接设置字段的值。
                     if (PlatformDependent.javaVersion() >= 9 && PlatformDependent.hasUnsafe()) {
                         // Let us try to use sun.misc.Unsafe to replace the SelectionKeySet.
                         // This allows us to also do this in Java9+ without any extra flags.
@@ -262,6 +266,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
         selectedKeys = selectedKeySet;
         logger.trace("instrumented a special java.util.Set into: {}", unwrappedSelector);
+        // 返回一个 SelectorTuple，其中包含可能被优化的 Selector 和自定义的 SelectedSelectionKeySetSelector
         return new SelectorTuple(unwrappedSelector,
                                  new SelectedSelectionKeySetSelector(unwrappedSelector, selectedKeySet));
     }
